@@ -1,0 +1,399 @@
+<html lang="ru">
+<head>
+  <title> finance </title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Бюджет — Учёт доходов и расходов</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--muted:#6b7280;--accent:#2563eb;--green:#10b981;--red:#ef4444}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:var(--bg);color:#0f172a;padding:20px}
+    .container{max-width:1000px;margin:0 auto}
+    header{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .brand{display:flex;flex-direction:column}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,button,textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e6edf6;background:transparent}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    .muted{color:var(--muted);font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #f1f5f9;font-size:14px}
+    .amount{font-weight:600}
+    .amount.income{color:var(--green)}
+    .amount.expense{color:var(--red)}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{display:inline-block;padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .btn.secondary{background:#eef2ff;color:var(--accent);border:1px solid #dbeafe}
+    .small{font-size:13px;padding:6px 8px}
+    .center{text-align:center}
+    @media(max-width:920px){.grid{grid-template-columns:1fr;}.card{padding:12px}}
+    .totals{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+    .totals .box{flex:1;padding:10px;border-radius:8px;background:#f8fafc}
+    .chart{height:150px;width:100%;display:block}
+    .empty{padding:40px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>Бюджет — учёт доходов и расходов</h1>
+        <p class="lead">Простой SPA для студентов: добавляй доходы/расходы и следи за балансом. Данные хранятся в браузере.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- main -->
+      <div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <strong>Транзакции</strong>
+              <div class="muted">Список операций (новые сверху)</div>
+            </div>
+            <div class="controls">
+              <select id="filterMonth" class="small">
+                <!-- populated by JS -->
+              </select>
+              <button class="btn secondary small" id="btnClear">Очистить</button>
+            </div>
+          </div>
+
+          <div id="transactionsContainer"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <strong>Экспорт / импорт</strong>
+          <p class="muted">Сохрани данные в CSV или JSON — удобно переносить между устройствами.</p>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="exportCsv">Экспорт CSV</button>
+            <button class="btn" id="exportJson">Экспорт JSON</button>
+            <label class="btn secondary small" style="cursor:pointer;display:inline-flex;align-items:center;">Импорт
+              <input id="importFile" type="file" accept="application/json,.json" style="display:none">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- sidebar -->
+      <aside>
+        <div class="card">
+          <strong>Добавить операцию</strong>
+          <form id="entryForm" style="margin-top:10px">
+            <label>Тип</label>
+            <select id="type">
+              <option value="income">Доход</option>
+              <option value="expense">Расход</option>
+            </select>
+
+            <label>Сумма (KZT)</label>
+            <input id="amount" type="number" step="0.01" required />
+
+            <label>Категория</label>
+            <select id="category">
+              <option>Прочее</option>
+              <option>Еда</option>
+              <option>Транспорт</option>
+              <option>Учёба</option>
+              <option>Развлечения</option>
+              <option>Зарплата</option>
+              <option>Фриланс</option>
+            </select>
+
+            <label>Дата</label>
+            <input id="date" type="date" required />
+
+            <label>Описание (опционально)</label>
+            <input id="note" type="text" />
+
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn" type="submit">Добавить</button>
+              <button class="btn secondary" type="button" id="btnUndo">Отменить</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <strong>Итоги</strong>
+          <div class="totals" style="margin-top:10px">
+            <div class="box">
+              <div class="muted">Доходы</div>
+              <div id="sumIncome" style="font-weight:700">0 KZT</div>
+            </div>
+            <div class="box">
+              <div class="muted">Расходы</div>
+              <div id="sumExpense" style="font-weight:700">0 KZT</div>
+            </div>
+            <div class="box">
+              <div class="muted">Баланс</div>
+              <div id="balance" style="font-weight:700">0 KZT</div>
+            </div>
+          </div>
+
+          <canvas id="chart" class="chart"></canvas>
+          <div class="muted" style="font-size:12px;margin-top:8px">График по категориям за выбранный месяц</div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+
+<script>
+// Simple budget app: stores entries in localStorage
+const STORAGE_KEY = 'student_budget_entries_v1'
+let entries = []
+
+// Elements
+const form = document.getElementById('entryForm')
+const typeEl = document.getElementById('type')
+const amountEl = document.getElementById('amount')
+const categoryEl = document.getElementById('category')
+const dateEl = document.getElementById('date')
+const noteEl = document.getElementById('note')
+const transactionsContainer = document.getElementById('transactionsContainer')
+const sumIncomeEl = document.getElementById('sumIncome')
+const sumExpenseEl = document.getElementById('sumExpense')
+const balanceEl = document.getElementById('balance')
+const filterMonth = document.getElementById('filterMonth')
+const btnClear = document.getElementById('btnClear')
+const btnExportCsv = document.getElementById('exportCsv')
+const btnExportJson = document.getElementById('exportJson')
+const importFile = document.getElementById('importFile')
+const chartCanvas = document.getElementById('chart')
+const btnUndo = document.getElementById('btnUndo')
+
+let lastAddedId = null
+
+// On load
+init()
+
+function init(){
+  // set default date to today
+  const today = new Date().toISOString().slice(0,10)
+  dateEl.value = today
+
+  load()
+  populateMonthFilter()
+  render()
+
+  form.addEventListener('submit', onAdd)
+  btnClear.addEventListener('click', onClear)
+  btnExportCsv.addEventListener('click', exportCsv)
+  btnExportJson.addEventListener('click', exportJson)
+  importFile.addEventListener('change', onImport)
+  filterMonth.addEventListener('change', render)
+  btnUndo.addEventListener('click', undoLast)
+}
+
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY)
+    entries = raw ? JSON.parse(raw) : []
+  }catch(e){ entries = [] }
+}
+
+function populateMonthFilter(){
+  // build list of months present in data
+  const months = new Set()
+  entries.forEach(e => months.add(e.date.slice(0,7)))
+  // always add current month
+  months.add(new Date().toISOString().slice(0,7))
+  const arr = Array.from(months).sort((a,b)=>b.localeCompare(a))
+  filterMonth.innerHTML = ''
+  arr.forEach(m => {
+    const opt = document.createElement('option')
+    opt.value = m
+    opt.textContent = formatMonthLabel(m)
+    filterMonth.appendChild(opt)
+  })
+}
+
+function formatMonthLabel(ym){
+  const [y,mo] = ym.split('-')
+  return `${mo}.${y}`
+}
+
+function onAdd(e){
+  e.preventDefault()
+  const amount = parseFloat(amountEl.value)
+  if(!amount || amount <= 0) return alert('Введите сумму > 0')
+  const entry = {
+    id: Date.now().toString(),
+    type: typeEl.value,
+    amount: Math.round(amount*100)/100,
+    category: categoryEl.value,
+    date: dateEl.value,
+    note: noteEl.value || ''
+  }
+  entries.unshift(entry)
+  lastAddedId = entry.id
+  save()
+  populateMonthFilter()
+  render()
+  form.reset()
+  dateEl.value = new Date().toISOString().slice(0,10)
+}
+
+function onClear(){
+  if(!confirm('Очистить все данные? Это нельзя будет отменить.')) return
+  entries = []
+  save()
+  populateMonthFilter()
+  render()
+}
+
+function render(){
+  const month = filterMonth.value || new Date().toISOString().slice(0,7)
+  // list transactions for selected month
+  const filtered = entries.filter(e => e.date.slice(0,7) === month)
+  transactionsContainer.innerHTML = ''
+  if(filtered.length === 0){
+    transactionsContainer.innerHTML = '<div class="empty">Нет операций за выбранный месяц</div>'
+  }else{
+    const table = document.createElement('table')
+    table.innerHTML = `<thead><tr><th>Дата</th><th>Категория</th><th>Описание</th><th>Сумма</th><th></th></tr></thead>`
+    const tbody = document.createElement('tbody')
+    filtered.forEach(e => {
+      const tr = document.createElement('tr')
+      tr.innerHTML = `<td>${e.date}</td><td>${escapeHtml(e.category)}</td><td>${escapeHtml(e.note)}</td><td class="amount ${e.type}">${e.type==='income'?'+':''}-${formatAmount(e.amount)} KZT</td><td style="text-align:right"><button data-id="${e.id}" class="small btn secondary">Удалить</button></td>`
+      tbody.appendChild(tr)
+    })
+    table.appendChild(tbody)
+    transactionsContainer.appendChild(table)
+    // attach delete handlers
+    transactionsContainer.querySelectorAll('button[data-id]').forEach(b=>b.addEventListener('click', onDelete))
+  }
+
+  // totals for selected month
+  const income = filtered.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0)
+  const expense = filtered.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0)
+  sumIncomeEl.textContent = formatAmount(income) + ' KZT'
+  sumExpenseEl.textContent = formatAmount(expense) + ' KZT'
+  balanceEl.textContent = formatAmount(income - expense) + ' KZT'
+
+  drawChart(filtered)
+}
+
+function onDelete(ev){
+  const id = ev.currentTarget.dataset.id
+  if(!confirm('Удалить операцию?')) return
+  entries = entries.filter(e=>e.id !== id)
+  save()
+  render()
+}
+
+function exportCsv(){
+  if(entries.length===0) return alert('Нет данных для экспорта')
+  const rows = [['id','type','amount','category','date','note']]
+  entries.forEach(e => rows.push([e.id,e.type,e.amount,e.category,e.date,`"${(e.note||'').replace(/"/g,'""')}"`]))
+  const csv = rows.map(r=>r.join(',')).join('\n')
+  downloadFile(csv, 'budget_export.csv', 'text/csv')
+}
+
+function exportJson(){
+  if(entries.length===0) return alert('Нет данных для экспорта')
+  const json = JSON.stringify(entries, null, 2)
+  downloadFile(json, 'budget_export.json', 'application/json')
+}
+
+function onImport(e){
+  const f = e.target.files[0]
+  if(!f) return
+  const reader = new FileReader()
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result)
+      if(!Array.isArray(parsed)) throw new Error('Ожидается массив записей')
+      // simple merge, keep unique ids
+      const existingIds = new Set(entries.map(x=>x.id))
+      const toAdd = parsed.filter(x=>!existingIds.has(x.id))
+      entries = toAdd.concat(entries)
+      save()
+      populateMonthFilter()
+      render()
+      alert('Импортировано ' + toAdd.length + ' записей')
+    }catch(err){ alert('Ошибка импорта: ' + err.message) }
+  }
+  reader.readAsText(f)
+  importFile.value = null
+}
+
+function downloadFile(content, filename, mime){
+  const blob = new Blob([content], {type: mime})
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove()
+  URL.revokeObjectURL(url)
+}
+
+function undoLast(){
+  if(!lastAddedId) return alert('Нет последней операции для отмены')
+  entries = entries.filter(e=>e.id !== lastAddedId)
+  lastAddedId = null
+  save(); render()
+}
+
+function formatAmount(n){
+  return Number(n).toLocaleString('ru-RU', {minimumFractionDigits: 0, maximumFractionDigits: 2})
+}
+
+function escapeHtml(s){
+  if(!s) return ''
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+// Simple category chart: draws bars on canvas
+function drawChart(data){
+  const byCat = {}
+  data.forEach(d => {
+    if(!byCat[d.category]) byCat[d.category] = 0
+    byCat[d.category] += (d.type==='income'?d.amount:-d.amount)
+  })
+  const cats = Object.keys(byCat)
+  const values = cats.map(c=>Math.abs(byCat[c]))
+  const ctx = chartCanvas.getContext('2d')
+  const W = chartCanvas.width = chartCanvas.clientWidth * devicePixelRatio
+  const H = chartCanvas.height = chartCanvas.clientHeight * devicePixelRatio
+  ctx.clearRect(0,0,W,H)
+  if(cats.length === 0){
+    ctx.fillStyle = '#94a3b8'; ctx.font = `${12*devicePixelRatio}px sans-serif`; ctx.textAlign='center'
+    ctx.fillText('Нет данных для графика', W/2, H/2)
+    return
+  }
+  const max = Math.max(...values)
+  const padding = 24*devicePixelRatio
+  const barW = (W - padding*2) / cats.length * 0.6
+  const gap = (W - padding*2) / cats.length
+  cats.forEach((c,i)=>{
+    const val = values[i]
+    const h = max===0?0: (val/max) * (H - padding*2)
+    const x = padding + i*gap + (gap-barW)/2
+    const y = H - padding - h
+    // color by sign
+    const positive = Object.values(byCat)[i] >= 0
+    ctx.fillStyle = positive ? '#10b981' : '#ef4444'
+    ctx.fillRect(x, y, barW, h)
+    // label
+    ctx.fillStyle = '#0f172a'
+    ctx.font = `${10*devicePixelRatio}px sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(c, x + barW/2, H - 6*devicePixelRatio)
+  })
+}
+
+// initialize filter select to current month if empty
+if(!filterMonth.value){
+  filterMonth.value = new Date().toISOString().slice(0,7)
+}
+
+</script>
+</body>
+</html>
