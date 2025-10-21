@@ -3,6 +3,7 @@
   <title> finance </title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <a href="http://127.0.0.1:5500/index.html" class="btn1"> доходы и расходы</a>
       <style>
       .btn1 {
@@ -43,12 +44,12 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
        
       }
- .btn1:hover {
+ .btn:hover {
         background-color: #0056b3;
         transform: translateY(-2px);
   }
   
-  .btn1:active {
+  .btn:active {
     transform: translateY(0);
   }
   </style>
@@ -67,16 +68,43 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
        
       }
- .btn1:hover {
+ .btn:hover {
         background-color: #0056b3;
         transform: translateY(-2px);
   }
   
-  .btn1:active {
+  .btn:active {
     transform: translateY(0);
   }
   </style>
+<a href="https://umarfaruh.github.io/mortgage/" class="btn">Калькулятор ипотеки</a>
+      <style>
+      .btn {
+
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #007bff;
+        color: white;
+        font-weight: 500;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-top: 60px;
+       
+      }
+ .btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+  }
+  
+  .btn:active {
+    transform: translateY(0);
+  }
+  </style>
+  
   <title>Бюджет — Учёт доходов и расходов</title>
+
+  
   <style>
     :root{--bg:#f6f7fb;--card:#fff;--muted:#6b7280;--accent:#2563eb;--green:#10b981;--red:#ef4444}
     *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
@@ -109,6 +137,9 @@
     .chart{height:150px;width:100%;display:block}
     .empty{padding:40px;text-align:center;color:var(--muted)}
   </style>
+  
+</style>
+
 </head>
 <body>
   <div class="container">
@@ -152,6 +183,8 @@
         </div>
       </div>
 
+
+
       <!-- sidebar -->
       <aside>
         <div class="card">
@@ -189,6 +222,8 @@
             </div>
           </form>
         </div>
+
+
 
         <div class="card" style="margin-top:16px">
           <strong>Итоги</strong>
@@ -377,6 +412,7 @@ function exportJson(){
   downloadFile(json, 'budget_export.json', 'application/json')
 }
 
+
 function onImport(e){
   const f = e.target.files[0]
   if(!f) return
@@ -468,5 +504,6 @@ if(!filterMonth.value){
 }
 
 </script>
+
 </body>
 </html>
