@@ -5,64 +5,62 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
 
-  <!-- Навигационные кнопки -->
+ 
   <body>
-  <!-- 🔹 Навигационные кнопки -->
-  <nav class="nav-buttons">
-    <a href="http://127.0.0.1:5500/index.html" class="btn">Доходы и расходы</a>
-    <a href="https://umarfaruh.github.io/financial_management/" class="btn">Налоговый калькулятор</a>
-    <a href="http://127.0.0.1:5502/index.html" class="btn">Накопи на мечту</a>
-    <a href="https://umarfaruh.github.io/mortgage/" class="btn">Калькулятор ипотеки</a>
-  </nav>
+  <!-- 🔹 Навигационная панель -->
+  <div class="navbar">
+    <a href="http://127.0.0.1:5500/index.html">Доходы и расходы</a>
+    <a href="https://umarfaruh.github.io/financial_management/">Налоговый калькулятор</a>
+    <a href="http://127.0.0.1:5502/index.html">Накопи на мечту</a>
+    <a href="https://umarfaruh.github.io/mortgage/">Калькулятор ипотеки</a>
+  </div>
 
-  <!-- 🔹 Стили -->
   <style>
-    .nav-buttons {
+    /* 🔸 Основные стили панели */
+    .navbar {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;
-      padding: 16px;
-      background: #f8fafc;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      background-color: #1e3a8a;
+      padding: 14px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin: 20px;
     }
 
-    .btn {
-      display: inline-block;
-      padding: 12px 20px;
-      background-color: #007bff;
+    /* 🔸 Кнопки */
+    .navbar a {
+      background-color: #2563eb;
       color: white;
-      font-weight: 500;
       text-decoration: none;
+      padding: 10px 18px;
       border-radius: 8px;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      flex: 1 1 180px;
-      text-align: center;
+      font-weight: 500;
+      transition: all 0.3s ease;
     }
 
-    .btn:hover {
-      background-color: #0056b3;
+    /* 🔸 При наведении */
+    .navbar a:hover {
+      background-color: #1d4ed8;
       transform: translateY(-2px);
     }
 
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    /* 📱 Мобильная адаптация */
+    /* 🔸 Для телефона (адаптив) */
     @media (max-width: 600px) {
-      .nav-buttons {
+      .navbar {
         flex-direction: column;
         align-items: stretch;
       }
-      .btn {
+      .navbar a {
         width: 100%;
-        font-size: 15px;
+        text-align: center;
       }
     }
   </style>
+</body>
+
 
 
   
